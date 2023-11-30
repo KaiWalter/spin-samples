@@ -1,0 +1,30 @@
+spin_manifest_version = 2
+
+[application]
+name = "http1"
+version = "0.1.0"
+authors = ["Kai Walter <kai.walter@outlook.de>"]
+description = ""
+
+[[trigger.http]]
+route = "/hello"
+component = "http1"
+
+[component.http1]
+source = "target/wasm32-wasi/release/http1.wasm"
+allowed_outbound_hosts = []
+[component.http1.build]
+command = "cargo build --target wasm32-wasi --release"
+watch = ["src/**/*.rs", "Cargo.toml"]
+
+[[trigger.http]]
+route = "/health"
+component = "health"
+
+[component.health]
+source = "health/target/wasm32-wasi/release/health.wasm"
+allowed_outbound_hosts = []
+[component.health.build]
+command = "cargo build --target wasm32-wasi --release"
+workdir = "health"
+watch = ["src/**/*.rs", "Cargo.toml"]
