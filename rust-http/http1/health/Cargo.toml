@@ -1,5 +1,5 @@
 [package]
-name = "http1"
+name = "health"
 authors = ["Kai Walter <kai.walter@outlook.de>"]
 description = ""
 version = "0.1.0"

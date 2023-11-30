@@ -7,14 +7,15 @@ authors = ["Kai Walter <kai.walter@outlook.de>"]
 description = ""
 
 [[trigger.http]]
-route = "/hello"
-component = "http1"
+route = "/q-order-ingress"
+component = "ingress"
 
-[component.http1]
-source = "target/wasm32-wasi/release/http1.wasm"
+[component.ingress]
+source = "ingress/target/wasm32-wasi/release/ingress.wasm"
 allowed_outbound_hosts = []
-[component.http1.build]
+[component.ingress.build]
 command = "cargo build --target wasm32-wasi --release"
+workdir = "ingress"
 watch = ["src/**/*.rs", "Cargo.toml"]
 
 [[trigger.http]]

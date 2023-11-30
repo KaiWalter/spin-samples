@@ -8,5 +8,5 @@ fn handle_http1(req: Request) -> anyhow::Result<impl IntoResponse> {
     Ok(http::Response::builder()
         .status(200)
         .header("content-type", "text/plain")
-        .body("Hello, Fermyon")?)
+        .body("Health OK")?)
 }
