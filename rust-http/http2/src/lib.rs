@@ -22,5 +22,6 @@ fn health(_req: Request, _params: Params) -> Result<impl IntoResponse> {
 }    
 
 fn ingress(req: http::Request<Json<Greeted>>, _params: Params) -> Result<impl IntoResponse> {
+    println!("name: {}",req.body().name);
     Ok(Response::new(200, format!("name: {}",req.body().name)))
 }    
