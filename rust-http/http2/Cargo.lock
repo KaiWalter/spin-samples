@@ -178,8 +178,10 @@ name = "http2"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bytes",
  "http",
  "serde",
+ "serde_json",
  "spin-sdk",
 ]
 
