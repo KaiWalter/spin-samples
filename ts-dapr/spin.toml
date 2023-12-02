@@ -1,0 +1,17 @@
+spin_manifest_version = 2
+
+[application]
+authors = ["Kai Walter <kai.walter@outlook.de>"]
+description = "Test Dapr with Spin"
+name = "ts-dapr"
+version = "0.1.0"
+
+[[trigger.http]]
+route = "/..."
+component = "ts-dapr"
+
+[component.ts-dapr]
+source = "target/ts-dapr.wasm"
+exclude_files = ["**/node_modules"]
+[component.ts-dapr.build]
+command = "npm run build"
