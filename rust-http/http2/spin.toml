@@ -6,13 +6,22 @@ version = "0.1.0"
 authors = ["Kai Walter <kai.walter@outlook.de>"]
 description = ""
 
+# here the potential variables are to be defined
+[variables]
+dapr_url = { default = "http://localhost:3500" }
+
 [[trigger.http]]
 route = "/..."
 component = "http2"
 
 [component.http2]
 source = "target/wasm32-wasi/release/http2.wasm"
-allowed_outbound_hosts = []
+allowed_outbound_hosts = [ "http://localhost:*" ]
+
+# here variables are defined, that are passed on to component
+[component.http2.variables]
+dapr_url = "{{dapr_url}}"
+
 [component.http2.build]
 command = "cargo build --target wasm32-wasi --release"
 watch = ["src/**/*.rs", "Cargo.toml"]

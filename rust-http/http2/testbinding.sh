@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-curl -X POST http://localhost:3500/v1.0/bindings/q-order-ingress \
+curl -X POST http://localhost:3501/v1.0/bindings/q-order-ingress \
   -H "Content-Type: application/json" \
   -d '{
         "data": {

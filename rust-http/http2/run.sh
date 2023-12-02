@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -e
+
+spin build
+
 source <(cat $(git rev-parse --show-toplevel)/.env)
 
 RESOURCE_GROUP_NAME=`az group list  --query "[?starts_with(name,'$AZURE_ENV_NAME')].name" -o tsv`
@@ -8,8 +12,8 @@ SERVICEBUS_CONNECTION=`az servicebus namespace authorization-rule keys list -g $
 
 APP_ID=distributor
 APP_PORT=3000
-DAPR_HTTP_PORT=3500
-
+DAPR_HTTP_PORT=3501
+export SPIN_VARIABLE_DAPR_URL=http://localhost:$DAPR_HTTP_PORT
 
 JSON_STRING=$( jq -n \
                   --arg sbc "$SERVICEBUS_CONNECTION" \

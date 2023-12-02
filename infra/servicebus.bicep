@@ -5,6 +5,8 @@ param tags object
 
 var queues = [
   'q-order-ingress'
+  'q-order-express'
+  'q-order-standard'
 ]
 
 resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2021-11-01' = {
