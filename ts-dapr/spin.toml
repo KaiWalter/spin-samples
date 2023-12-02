@@ -6,12 +6,22 @@ description = "Test Dapr with Spin"
 name = "ts-dapr"
 version = "0.1.0"
 
+# here the potential variables are to be defined
+[variables]
+dapr_url = { default = "http://localhost:3500" }
+
 [[trigger.http]]
 route = "/..."
 component = "ts-dapr"
 
 [component.ts-dapr]
 source = "target/ts-dapr.wasm"
+allowed_outbound_hosts = [ "http://localhost:*" ]
 exclude_files = ["**/node_modules"]
+
+# here variables are defined, that are passed on to component
+[component.ts-dapr.variables]
+dapr_url = "{{dapr_url}}"
+
 [component.ts-dapr.build]
 command = "npm run build"
