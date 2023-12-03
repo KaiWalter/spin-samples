@@ -7,10 +7,14 @@ source <(cat $(git rev-parse --show-toplevel)/.env)
 RESOURCE_GROUP_NAME=`az group list  --query "[?starts_with(name,'$AZURE_ENV_NAME')].name" -o tsv`
 SERVICEBUS_NAMESPACE=`az resource list -g $RESOURCE_GROUP_NAME --resource-type Microsoft.ServiceBus/namespaces --query '[0].name' -o tsv`
 SERVICEBUS_CONNECTION=`az servicebus namespace authorization-rule keys list -g $RESOURCE_GROUP_NAME --namespace-name $SERVICEBUS_NAMESPACE -n RootManageSharedAccessKey --query primaryConnectionString -o tsv`
+STORAGE_NAME=`az resource list -g $RESOURCE_GROUP_NAME --resource-type Microsoft.Storage/storageAccounts --query '[0].name' -o tsv`
+STORAGE_ACCOUNT_KEY=`az storage account keys list -g $RESOURCE_GROUP_NAME -n $STORAGE_NAME --query "[?permissions == 'FULL'] | [0].value" -o tsv `
 
 JSON_STRING=$( jq -n \
                   --arg sbc "$SERVICEBUS_CONNECTION" \
-                  '{SERVICEBUS_CONNECTION: $sbc}' )
+                  --arg stn "$STORAGE_NAME" \
+                  --arg stk "$STORAGE_ACCOUNT_KEY" \
+                  '{SERVICEBUS_CONNECTION: $sbc, STORAGE_NAME: $stn, STORAGE_ACCOUNT_KEY: $stk}' )
 echo $JSON_STRING > ./.secrets.json
 APP_ID=${1,,}
 
@@ -37,6 +41,7 @@ else
   dapr run --app-id ${APP_ID} \
       --app-port ${APP_PORT} \
       --dapr-http-port ${DAPR_HTTP_PORT} \
+      --log-level warn \
       --enable-app-health-check \
       --app-health-probe-interval 60 \
       --resources-path ./components-$APP_ID/ \

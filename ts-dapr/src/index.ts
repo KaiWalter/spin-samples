@@ -63,29 +63,28 @@ async function receiver(body: ArrayBuffer): Promise<HttpResponse> {
     const order = JSON.parse(decoder.decode(body));
     console.log(order);
 
-    // const dapr_url = Config.get("dapr_url");
-    // console.log(dapr_url);
-    // const url = `${dapr_url}/v1.0/bindings/q-order-${order.delivery}`;
-    // console.log(url);
-    //
-    // const result = await fetch(url, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: encoder.encode(
-    //     JSON.stringify(
-    //       {
-    //         operation: "create",
-    //         data: order,
-    //       },
-    //       null,
-    //       2,
-    //     ),
-    //   ),
-    // });
-    //
-    // console.log(result);
+    const dapr_url = Config.get("dapr_url");
+    const url = `${dapr_url}/v1.0/bindings/${order.Delivery.toLowerCase()}-outbox`;
+
+    const operation = JSON.stringify(
+      {
+        operation: "create",
+        data: order,
+        metadata: {
+          blobName: order.OrderId.toString(),
+        },
+      },
+      null,
+      2,
+    );
+
+    await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: encoder.encode(operation),
+    });
 
     return {
       status: 200,
