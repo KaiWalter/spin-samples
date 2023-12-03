@@ -4,7 +4,7 @@ curl -X POST http://localhost:3501/v1.0/bindings/q-order-ingress \
   -H "Content-Type: application/json" \
   -d '{
         "data": {
-          "delivery": "standard"
+          "Delivery": "standard"
         },
         "metadata": {
           "ttlInSeconds": "60"
@@ -16,7 +16,7 @@ curl -X POST http://localhost:3501/v1.0/bindings/q-order-ingress \
   -H "Content-Type: application/json" \
   -d '{
         "data": {
-          "delivery": "express"
+          "Delivery": "express"
         },
         "metadata": {
           "ttlInSeconds": "60"

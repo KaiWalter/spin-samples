@@ -27,9 +27,9 @@ async function distributor(body: ArrayBuffer): Promise<HttpResponse> {
     const order = JSON.parse(decoder.decode(body));
     console.log(order);
     const dapr_url = Config.get("dapr_url");
-    const url = `${dapr_url}/v1.0/bindings/q-order-${order.delivery}`;
+    const url = `${dapr_url}/v1.0/bindings/q-order-${order.Delivery.toLowerCase()}`;
 
-    const result = await fetch(url, {
+    await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -11,6 +11,6 @@ spec:
         name: SERVICEBUS_CONNECTION
         key: SERVICEBUS_CONNECTION
     - name: queueName
-      value: q-order-ingress
+      value: q-order-ingress-spin
 auth:
   secretStore: secretfile
