@@ -12,6 +12,7 @@ spec:
         key: SERVICEBUS_CONNECTION
     - name: queueName
       value: q-order-express
+    - name: direction
+      value: input
 auth:
   secretStore: secretfile
-
