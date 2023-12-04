@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+if [[ -z $(docker buildx ls | grep wasm-builder) ]]; then
+  docker buildx create --name wasm-builder --platform wasi/wasm,linux/amd64
+fi
+
+REVISION=`date +"%s"`
+IMAGE_NAME=ts-dapr:$REVISION
+
+docker buildx use wasm-builder
+docker buildx build --platform=wasi/wasm --load -t $IMAGE_NAME .
+docker save $IMAGE_NAME -o ./target/ts-dapr.tar
+docker buildx use default
