@@ -23,8 +23,12 @@ then
   k3d cluster delete wasm-cluster
 fi
 
-k3d cluster create wasm-cluster --image ghcr.io/deislabs/containerd-wasm-shims/examples/k3d:v0.10.0 -p "8081:80@loadbalancer" --agents 2 --registry-config $outfile
-kubectl apply -f https://github.com/deislabs/containerd-wasm-shims/raw/main/deployments/workloads/runtime.yaml
+k3d cluster create wasm-cluster \
+  --image ghcr.io/deislabs/containerd-wasm-shims/examples/k3d:v0.10.0 \
+  -p "8081:80@loadbalancer" \
+  --agents 2 \
+  --registry-config $outfile
+kubectl apply -f https://raw.githubusercontent.com/deislabs/containerd-wasm-shims/main/deployments/workloads/runtime.yaml
 dapr init -k
 
 rm $outfile
