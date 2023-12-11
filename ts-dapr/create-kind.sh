@@ -10,25 +10,19 @@ AZURE_CONTAINER_REGISTRY_ENDPOINT=`az acr show -n $AZURE_CONTAINER_REGISTRY_NAME
 AZURE_CONTAINER_REGISTRY_PASSWORD=`az acr credential show -n $AZURE_CONTAINER_REGISTRY_NAME --query "passwords[0].value" -o tsv
 `
 
-outfile=./.registries.yaml
-
-echo "configs:" > $outfile
-echo "  $AZURE_CONTAINER_REGISTRY_ENDPOINT:" >> $outfile
-echo "    auth:" >> $outfile
-echo "      username: $AZURE_CONTAINER_REGISTRY_NAME" >> $outfile
-echo "      password: $AZURE_CONTAINER_REGISTRY_PASSWORD" >> $outfile
-
-if [[ ! -z "$(k3d cluster list | grep wasm-cluster)" ]];
+if [[ ! -z "$(kind get clusters | grep wasm-cluster)" ]];
 then
-  k3d cluster delete wasm-cluster
+  kind delete cluster -n wasm-cluster
 fi
 
-k3d cluster create wasm-cluster \
-  --image ghcr.io/deislabs/containerd-wasm-shims/examples/k3d:v0.10.0 \
-  -p "8081:80@loadbalancer" \
-  --agents 1 \
-  --registry-config $outfile
+kind create cluster -n wasm-cluster --config ./kind-config.yaml
+
+kubectl create secret docker-registry pull-secret \
+  --docker-server=$AZURE_CONTAINER_REGISTRY_ENDPOINT \
+  --docker-username=$AZURE_CONTAINER_REGISTRY_NAME \
+  --docker-password=$AZURE_CONTAINER_REGISTRY_PASSWORD
+
 kubectl apply -f https://raw.githubusercontent.com/deislabs/containerd-wasm-shims/main/deployments/workloads/runtime.yaml
+
 dapr init -k
 
-rm $outfile

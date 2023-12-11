@@ -13,6 +13,6 @@ IMAGE_NAME=$AZURE_CONTAINER_REGISTRY_ENDPOINT/$APP:$TAG
 
 yq eval ".spec|=select(.selector.matchLabels.app==\"distributor\")
                  .template.spec.containers[0].image =
-                    \"$IMAGE_NAME\"" workload-k3d.yml | kubectl apply -f -
+                    \"$IMAGE_NAME\"" workload-kind.yml | kubectl apply -f -
 
 kubectl describe pod -l=app=distributor
