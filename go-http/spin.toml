@@ -1,0 +1,18 @@
+spin_manifest_version = 2
+
+[application]
+name = "go-http"
+version = "0.1.0"
+authors = ["Kai Walter <kai.walter@outlook.de>"]
+description = ""
+
+[[trigger.http]]
+route = "/..."
+component = "go-http"
+
+[component.go-http]
+source = "main.wasm"
+allowed_outbound_hosts = []
+[component.go-http.build]
+command = "tinygo build -target=wasi -gc=leaking -no-debug -o main.wasm main.go"
+watch = ["**/*.go", "go.mod"]
