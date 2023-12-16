@@ -17,7 +17,9 @@ spec:
         dapr.io/app-port: "80"
         dapr.io/enable-api-logging: "true"
         dapr.io/enable-app-health-check: "true"
-        dapr.io/log-level: "warn"
+        dapr.io/log-level: "info"
+        dapr.io/placement-host-address: ""
+        dapr.io/sidecar-listen-addresses: "0.0.0.0,[::]"
     spec:
       runtimeClassName: wasmtime-spin
       containers:
@@ -55,7 +57,8 @@ spec:
         dapr.io/app-port: "80"
         dapr.io/enable-api-logging: "true"
         dapr.io/enable-app-health-check: "true"
-        dapr.io/log-level: "warn"
+        dapr.io/log-level: "info"
+        dapr.io/placement-host-address: ""
     spec:
       runtimeClassName: wasmtime-spin
       containers:
@@ -93,7 +96,8 @@ spec:
         dapr.io/app-port: "80"
         dapr.io/enable-api-logging: "true"
         dapr.io/enable-app-health-check: "true"
-        dapr.io/log-level: "warn"
+        dapr.io/log-level: "info"
+        dapr.io/placement-host-address: ""
     spec:
       runtimeClassName: wasmtime-spin
       containers:
@@ -119,9 +123,14 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 80
+    - name: dapr
+      protocol: TCP
+      port: 3500
+      targetPort: 3500
   selector:
     app: distributor
 ---
@@ -159,6 +168,7 @@ spec:
   stripPrefix:
     forceSlash: false
     prefixes:
+      - /distributor-dapr
       - /distributor
       - /receiver-express
       - /receiver-standard
@@ -182,6 +192,13 @@ spec:
                 name: distributor
                 port:
                   number: 80
+          - path: /distributor-dapr
+            pathType: Prefix
+            backend:
+              service:
+                name: distributor
+                port:
+                  number: 3500
           - path: /receiver-express
             pathType: Prefix
             backend:

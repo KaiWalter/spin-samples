@@ -11,6 +11,7 @@ const decoder = new TextDecoder();
 const router = Router();
 
 router.get("/healthz", () => ({ status: 200 }));
+router.get("/dapr-metadata", () => dapr_meta());
 router.options("/q-order-ingress", () => ({ status: 200 }));
 router.post("/q-order-ingress", (_, body) => distributor(body));
 router.options("/q-order-express", () => ({ status: 200 }));
@@ -21,6 +22,26 @@ router.all("*", () => ({
   status: 404,
   body: encoder.encode("Not found"),
 }));
+
+async function dapr_meta(): Promise<HttpResponse> {
+  try {
+    const dapr_url = Config.get("dapr_url");
+    const url = `${dapr_url}/v1.0/metadata`;
+
+    const response = await fetch(url);
+    const body = await response.json();
+
+    return {
+      status: 200,
+      body: encoder.encode(JSON.stringify(body, null, 2)),
+    };
+  } catch (e) {
+    return {
+      status: 500,
+      body: encoder.encode("internal error"),
+    };
+  }
+}
 
 async function distributor(body: ArrayBuffer): Promise<HttpResponse> {
   try {
