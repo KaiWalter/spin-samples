@@ -14,10 +14,10 @@ router.get("/healthz", () => ({ status: 200 }));
 router.get("/dapr-metadata", () => dapr_meta());
 router.options("/q-order-ingress", () => ({ status: 200 }));
 router.post("/q-order-ingress", (_, body) => distributor(body));
-router.options("/q-order-express", () => ({ status: 200 }));
-router.post("/q-order-express", (_, body) => receiver(body));
-router.options("/q-order-standard", () => ({ status: 200 }));
-router.post("/q-order-standard", (_, body) => receiver(body));
+router.options("/q-order-express-in", () => ({ status: 200 }));
+router.post("/q-order-express-in", (_, body) => receiver(body));
+router.options("/q-order-standard-in", () => ({ status: 200 }));
+router.post("/q-order-standard-in", (_, body) => receiver(body));
 router.all("*", () => ({
   status: 404,
   body: encoder.encode("Not found"),
@@ -48,7 +48,7 @@ async function distributor(body: ArrayBuffer): Promise<HttpResponse> {
     const order = JSON.parse(decoder.decode(body));
     console.log(order);
     const dapr_url = Config.get("dapr_url");
-    const url = `${dapr_url}/v1.0/bindings/q-order-${order.Delivery.toLowerCase()}`;
+    const url = `${dapr_url}/v1.0/bindings/q-order-${order.Delivery.toLowerCase()}-out`;
 
     await fetch(url, {
       method: "POST",

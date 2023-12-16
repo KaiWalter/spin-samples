@@ -1,3 +1,172 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: tracing
+  namespace: default
+spec:
+  tracing:
+    samplingRate: "1"
+    zipkin:
+      endpointAddress: "http://zipkin.default.svc.cluster.local:9411/api/v2/spans"
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: secretstore
+spec:
+  type: secretstores.kubernetes
+  version: v1
+  metadata: []
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: q-order-ingress
+spec:
+  type: bindings.azure.servicebusqueues
+  version: v1
+  metadata:
+    - name: connectionString
+      secretKeyRef:
+        name: servicebus-secret
+        key: connectionString
+    - name: queueName
+      value: q-order-ingress-spin
+auth:
+  secretStore: secretstore
+scopes:
+  - distributor
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: q-order-express-out
+spec:
+  type: bindings.azure.servicebusqueues
+  version: v1
+  metadata:
+    - name: connectionString
+      secretKeyRef:
+        name: servicebus-secret
+        key: connectionString
+    - name: queueName
+      value: q-order-express-spin
+    - name: direction
+      value: output
+auth:
+  secretStore: secretstore
+scopes:
+  - distributor
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: q-order-standard-out
+spec:
+  type: bindings.azure.servicebusqueues
+  version: v1
+  metadata:
+    - name: connectionString
+      secretKeyRef:
+        name: servicebus-secret
+        key: connectionString
+    - name: queueName
+      value: q-order-standard-spin
+    - name: direction
+      value: output
+auth:
+  secretStore: secretstore
+scopes:
+  - distributor
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: q-order-express-in
+spec:
+  type: bindings.azure.servicebusqueues
+  version: v1
+  metadata:
+    - name: connectionString
+      secretKeyRef:
+        name: servicebus-secret
+        key: connectionString
+    - name: queueName
+      value: q-order-express-spin
+    - name: direction
+      value: input
+auth:
+  secretStore: secretstore
+scopes:
+  - receiver-express
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: q-order-standard-in
+spec:
+  type: bindings.azure.servicebusqueues
+  version: v1
+  metadata:
+    - name: connectionString
+      secretKeyRef:
+        name: servicebus-secret
+        key: connectionString
+    - name: queueName
+      value: q-order-standard-spin
+    - name: direction
+      value: input
+auth:
+  secretStore: secretstore
+scopes:
+  - receiver-standard
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: express-outbox
+spec:
+  type: bindings.azure.blobstorage
+  version: v1
+  metadata:
+    - name: accountName
+      secretKeyRef:
+        name: storage-secret
+        key: accountName
+    - name: accountKey
+      secretKeyRef:
+        name: storage-secret
+        key: accountKey
+    - name: containerName
+      value: express-outbox
+auth:
+  secretStore: secretstore
+scopes:
+  - receiver-express
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: standard-outbox
+spec:
+  type: bindings.azure.blobstorage
+  version: v1
+  metadata:
+    - name: accountName
+      secretKeyRef:
+        name: storage-secret
+        key: accountName
+    - name: accountKey
+      secretKeyRef:
+        name: storage-secret
+        key: accountKey
+    - name: containerName
+      value: standard-outbox
+auth:
+  secretStore: secretstore
+scopes:
+  - receiver-standard
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,6 +187,8 @@ spec:
         dapr.io/enable-api-logging: "true"
         dapr.io/enable-app-health-check: "true"
         dapr.io/log-level: "info"
+        dapr.io/config: "tracing"
+        dapr.io/app-protocol: "http"
         dapr.io/placement-host-address: ""
         dapr.io/sidecar-listen-addresses: "0.0.0.0,[::]"
     spec:
@@ -58,7 +229,10 @@ spec:
         dapr.io/enable-api-logging: "true"
         dapr.io/enable-app-health-check: "true"
         dapr.io/log-level: "info"
+        dapr.io/config: "tracing"
+        dapr.io/app-protocol: "http"
         dapr.io/placement-host-address: ""
+        dapr.io/sidecar-listen-addresses: "0.0.0.0,[::]"
     spec:
       runtimeClassName: wasmtime-spin
       containers:
@@ -97,7 +271,10 @@ spec:
         dapr.io/enable-api-logging: "true"
         dapr.io/enable-app-health-check: "true"
         dapr.io/log-level: "info"
+        dapr.io/config: "tracing"
+        dapr.io/app-protocol: "http"
         dapr.io/placement-host-address: ""
+        dapr.io/sidecar-listen-addresses: "0.0.0.0,[::]"
     spec:
       runtimeClassName: wasmtime-spin
       containers:

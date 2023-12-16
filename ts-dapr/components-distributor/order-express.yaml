@@ -1,7 +1,7 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: q-order-express
+  name: q-order-express-out
 spec:
   type: bindings.azure.servicebusqueues
   version: v1
