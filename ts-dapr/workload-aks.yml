@@ -1,15 +1,4 @@
 apiVersion: dapr.io/v1alpha1
-kind: Configuration
-metadata:
-  name: tracing
-  namespace: default
-spec:
-  tracing:
-    samplingRate: "1"
-    zipkin:
-      endpointAddress: "http://zipkin.default.svc.cluster.local:9411/api/v2/spans"
----
-apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
   name: secretstore
@@ -190,7 +179,7 @@ kind: Deployment
 metadata:
   name: distributor
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: distributor
@@ -205,7 +194,6 @@ spec:
         dapr.io/enable-api-logging: "true"
         dapr.io/enable-app-health-check: "true"
         dapr.io/log-level: "info"
-        dapr.io/config: "tracing"
         dapr.io/app-protocol: "http"
         dapr.io/placement-host-address: ""
         dapr.io/sidecar-listen-addresses: "0.0.0.0,[::]"
@@ -224,7 +212,7 @@ spec:
             httpGet:
               path: .well-known/spin/health
               port: 80
-            initialDelaySeconds: 10
+            initialDelaySeconds: 45
             periodSeconds: 3
 ---
 apiVersion: apps/v1
@@ -232,7 +220,7 @@ kind: Deployment
 metadata:
   name: receiver-express
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: receiver-express
@@ -247,7 +235,6 @@ spec:
         dapr.io/enable-api-logging: "true"
         dapr.io/enable-app-health-check: "true"
         dapr.io/log-level: "info"
-        dapr.io/config: "tracing"
         dapr.io/app-protocol: "http"
         dapr.io/placement-host-address: ""
         dapr.io/sidecar-listen-addresses: "0.0.0.0,[::]"
@@ -266,7 +253,7 @@ spec:
             httpGet:
               path: .well-known/spin/health
               port: 80
-            initialDelaySeconds: 10
+            initialDelaySeconds: 45
             periodSeconds: 3
 ---
 apiVersion: apps/v1
@@ -274,7 +261,7 @@ kind: Deployment
 metadata:
   name: receiver-standard
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: receiver-standard
@@ -289,7 +276,6 @@ spec:
         dapr.io/enable-api-logging: "true"
         dapr.io/enable-app-health-check: "true"
         dapr.io/log-level: "info"
-        dapr.io/config: "tracing"
         dapr.io/app-protocol: "http"
         dapr.io/placement-host-address: ""
         dapr.io/sidecar-listen-addresses: "0.0.0.0,[::]"
@@ -308,7 +294,7 @@ spec:
             httpGet:
               path: .well-known/spin/health
               port: 80
-            initialDelaySeconds: 10
+            initialDelaySeconds: 45
             periodSeconds: 3
 ---
 apiVersion: v1
@@ -354,57 +340,3 @@ spec:
       targetPort: 80
   selector:
     app: receiver-standard
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: strip-prefix
-spec:
-  stripPrefix:
-    forceSlash: false
-    prefixes:
-      - /distributor-dapr
-      - /distributor
-      - /receiver-express
-      - /receiver-standard
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: wasm-ingress
-  annotations:
-    ingress.kubernetes.io/ssl-redirect: "false"
-    traefik.ingress.kubernetes.io/router.middlewares: default-strip-prefix@kubernetescrd
-spec:
-  ingressClassName: traefik
-  rules:
-    - http:
-        paths:
-          - path: /distributor
-            pathType: Prefix
-            backend:
-              service:
-                name: distributor
-                port:
-                  number: 80
-          - path: /distributor-dapr
-            pathType: Prefix
-            backend:
-              service:
-                name: distributor
-                port:
-                  number: 3500
-          - path: /receiver-express
-            pathType: Prefix
-            backend:
-              service:
-                name: receiver-express
-                port:
-                  number: 80
-          - path: /receiver-standard
-            pathType: Prefix
-            backend:
-              service:
-                name: receiver-standard
-                port:
-                  number: 80

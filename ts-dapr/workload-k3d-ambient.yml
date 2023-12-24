@@ -198,28 +198,12 @@ spec:
     metadata:
       labels:
         app: distributor
-      annotations:
-        dapr.io/enabled: "true"
-        dapr.io/app-id: "distributor"
-        dapr.io/app-port: "80"
-        dapr.io/enable-api-logging: "true"
-        dapr.io/enable-app-health-check: "true"
-        dapr.io/log-level: "info"
-        dapr.io/config: "tracing"
-        dapr.io/app-protocol: "http"
-        dapr.io/placement-host-address: ""
-        dapr.io/sidecar-listen-addresses: "0.0.0.0,[::]"
     spec:
       runtimeClassName: wasmtime-spin
       containers:
         - name: distributor
           image: { will be replace by deployment script }
           command: ["/"]
-          env:
-            - name: RUST_BACKTRACE
-              value: "1"
-            - name: DAPR_URL
-              value: "http://localhost:3500"
           livenessProbe:
             httpGet:
               path: .well-known/spin/health
@@ -240,28 +224,12 @@ spec:
     metadata:
       labels:
         app: receiver-express
-      annotations:
-        dapr.io/enabled: "true"
-        dapr.io/app-id: "receiver-express"
-        dapr.io/app-port: "80"
-        dapr.io/enable-api-logging: "true"
-        dapr.io/enable-app-health-check: "true"
-        dapr.io/log-level: "info"
-        dapr.io/config: "tracing"
-        dapr.io/app-protocol: "http"
-        dapr.io/placement-host-address: ""
-        dapr.io/sidecar-listen-addresses: "0.0.0.0,[::]"
     spec:
       runtimeClassName: wasmtime-spin
       containers:
         - name: receiver-express
           image: { will be replace by deployment script }
           command: ["/"]
-          env:
-            - name: RUST_BACKTRACE
-              value: "1"
-            - name: DAPR_URL
-              value: "http://localhost:3500"
           livenessProbe:
             httpGet:
               path: .well-known/spin/health
@@ -282,28 +250,12 @@ spec:
     metadata:
       labels:
         app: receiver-standard
-      annotations:
-        dapr.io/enabled: "true"
-        dapr.io/app-id: "receiver-standard"
-        dapr.io/app-port: "80"
-        dapr.io/enable-api-logging: "true"
-        dapr.io/enable-app-health-check: "true"
-        dapr.io/log-level: "info"
-        dapr.io/config: "tracing"
-        dapr.io/app-protocol: "http"
-        dapr.io/placement-host-address: ""
-        dapr.io/sidecar-listen-addresses: "0.0.0.0,[::]"
     spec:
       runtimeClassName: wasmtime-spin
       containers:
         - name: receiver-standard
           image: { will be replace by deployment script }
           command: ["/"]
-          env:
-            - name: RUST_BACKTRACE
-              value: "1"
-            - name: DAPR_URL
-              value: "http://localhost:3500"
           livenessProbe:
             httpGet:
               path: .well-known/spin/health
@@ -322,10 +274,6 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 80
-    - name: dapr
-      protocol: TCP
-      port: 3500
-      targetPort: 3500
   selector:
     app: distributor
 ---
@@ -336,7 +284,8 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 80
   selector:
@@ -349,7 +298,8 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 80
   selector:
@@ -363,7 +313,6 @@ spec:
   stripPrefix:
     forceSlash: false
     prefixes:
-      - /distributor-dapr
       - /distributor
       - /receiver-express
       - /receiver-standard
@@ -387,13 +336,6 @@ spec:
                 name: distributor
                 port:
                   number: 80
-          - path: /distributor-dapr
-            pathType: Prefix
-            backend:
-              service:
-                name: distributor
-                port:
-                  number: 3500
           - path: /receiver-express
             pathType: Prefix
             backend:

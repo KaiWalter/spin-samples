@@ -2,5 +2,8 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
   - role: control-plane
+    image: ghcr.io/liquid-reply/kind-crun-wasm:v1.23.4
   - role: worker
+    image: ghcr.io/liquid-reply/kind-crun-wasm:v1.23.4
   - role: worker
+    image: ghcr.io/liquid-reply/kind-crun-wasm:v1.23.4
