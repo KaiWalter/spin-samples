@@ -16,7 +16,7 @@ component = "ts-dapr"
 
 [component.ts-dapr]
 source = "target/ts-dapr.wasm"
-allowed_outbound_hosts = [ "http://localhost:*" ]
+allowed_outbound_hosts = [ "*://*:*" ]
 exclude_files = ["**/node_modules"]
 
 # here variables are defined, that are passed on to component

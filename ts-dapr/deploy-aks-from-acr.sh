@@ -51,7 +51,8 @@ if [ $PATTERN = 'ambient' ]; then
       --set ambient.appId=$app \
       --set ambient.remoteURL=$app-svc \
       --set ambient.remotePort=80 \
-      --set ambient.serviceAccount.name=$app
+      --set ambient.serviceAccount.name=$app \
+      --set ambient.daprd.listenAddresses=127.0.0.1
 
   done
 fi

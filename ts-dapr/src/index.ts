@@ -24,10 +24,10 @@ router.all("*", () => ({
 }));
 
 async function dapr_meta(): Promise<HttpResponse> {
-  try {
-    const dapr_url = Config.get("dapr_url");
-    const url = `${dapr_url}/v1.0/metadata`;
+  const dapr_url = Config.get("dapr_url");
+  const url = `${dapr_url}/v1.0/metadata`;
 
+  try {
     const response = await fetch(url);
     const body = await response.json();
 
@@ -38,7 +38,7 @@ async function dapr_meta(): Promise<HttpResponse> {
   } catch (e) {
     return {
       status: 500,
-      body: encoder.encode("internal error"),
+      body: encoder.encode(`internal error ${e} when accessing ${url}`),
     };
   }
 }
