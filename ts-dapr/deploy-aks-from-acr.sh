@@ -1,10 +1,8 @@
 #!/bin/bash
 
-set -e
-
 source <(cat $(git rev-parse --show-toplevel)/.env)
 
-if [ -z $AZURE_ENV_NAME ]; then
+if [ ! -z "$TARGET_INFRA_FOLDER" ]; then
   RESOURCE_GROUP_NAME=`terraform output -state=$TARGET_INFRA_FOLDER/terraform.tfstate -json script_vars | jq -r .resource_group`
 else
   RESOURCE_GROUP_NAME=`az group list  --query "[?starts_with(name,'$AZURE_ENV_NAME')].name" -o tsv`
@@ -20,13 +18,17 @@ AZURE_CONTAINER_REGISTRY_ENDPOINT=`az acr show -n $AZURE_CONTAINER_REGISTRY_NAME
 TAG=`az acr repository show-tags -n $AZURE_CONTAINER_REGISTRY_NAME --repository $APP --top 1 --orderby time_desc -o tsv`
 IMAGE_NAME=$AZURE_CONTAINER_REGISTRY_ENDPOINT/$APP:$TAG
 
+PATTERN="${1:-ambient}"
+
 kubectl delete secret servicebus-secret --ignore-not-found
 kubectl create secret generic servicebus-secret --from-literal=connectionString=$SERVICEBUS_CONNECTION
 kubectl delete secret storage-secret --ignore-not-found
 kubectl create secret generic storage-secret --from-literal=accountName=$STORAGE_NAME \
     --from-literal=accountKey=$STORAGE_ACCOUNT_KEY
 
-cat workload-aks.yml | \
+kubectl apply -f ./dapr-components.yml
+
+cat ./workload-aks-$PATTERN.yml | \
 yq eval ".spec|=select(.selector.matchLabels.app==\"distributor\")
     .template.spec.containers[0].image = \"$IMAGE_NAME\"" | \
 yq eval ".spec|=select(.selector.matchLabels.app==\"receiver-express\") 
@@ -35,4 +37,21 @@ yq eval ".spec|=select(.selector.matchLabels.app==\"receiver-standard\")
     .template.spec.containers[0].image = \"$IMAGE_NAME\"" | \
 kubectl apply -f -
 
-kubectl describe pod -l=app=distributor
+if [ $PATTERN = 'ambient' ]; then
+  apps=("distributor")
+  # apps=("distributor" "receiver-express" "receiver-standard")
+
+  for app in "${apps[@]}"
+  do
+    echo "$app"
+
+    helm upgrade --install $app-dapr ../../dapr-ambient/chart/dapr-ambient/ \
+      --set fullnameOverride=$app-dapr \
+      --set ambient.initContainer.image.registry=$AZURE_CONTAINER_REGISTRY_ENDPOINT \
+      --set ambient.appId=$app \
+      --set ambient.remoteURL=$app-svc \
+      --set ambient.remotePort=80 \
+      --set ambient.serviceAccount.name=$app
+
+  done
+fi
