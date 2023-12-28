@@ -19,7 +19,7 @@ spec:
           command: ["/"]
           env:
             - name: SPIN_VARIABLE_DAPR_URL
-              value: "http://distributor-dapr:80"
+              value: "http://distributor-dapr"
           livenessProbe:
             httpGet:
               path: .well-known/spin/health

@@ -85,3 +85,9 @@ k3d cluster delete wasm-cluster
 ## to look into
 
 <https://github.com/engineerd/wasm-to-oci/blob/master/README.md>
+
+## pods stuck in Terminating helpers
+
+```
+kubectl get events --sort-by=.metadata.creationTimestamp
+```
